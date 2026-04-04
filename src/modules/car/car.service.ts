@@ -19,3 +19,16 @@ export const createCar = async (data:{
         data,
     });
 };
+
+export const updateCar = async (id: number, data:any) =>{
+    return await prisma.car.update({
+        where: {id},
+        data,
+    });
+};
+
+export const deleteCar = async (id: number) =>{
+    return await prisma.car.delete({
+        where: {id},
+    });
+};
