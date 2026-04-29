@@ -1,22 +1,64 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Get a free hosted Postgres database in seconds: `npx create-db`
-
 generator client {
-  provider = "prisma-client"
-  output   = "../src/generated/prisma"
+   provider = "prisma-client" 
+   output = "../src/generated/prisma" 
+   }
+
+datasource db { 
+  provider = "postgresql" 
+  }
+
+  
+enum CarStatus {
+  AVAILABLE
+  SOLD
 }
 
-datasource db {
-  provider = "postgresql"
+enum BookingStatus {
+  PENDING
+  CONFIRMED
+  CANCELLED
 }
 
 model Car {
-  id Int @id @default(autoincrement())
-  title String
-  price Int
-  year Int
-  createAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id                  Int        @id @default(autoincrement())
+  title               String
+  brand               String
+  model               String
+  year                Int
+  price               Int
+  mileage             Int
+  fuelType            String
+  transmission        String
+  registrationCity    String
+  registrationNumber  String
+  status              CarStatus  @default(AVAILABLE)
+  description         String?
+  
+  images              CarImage[]
+  bookings            Booking[]
+
+  createdAt           DateTime   @default(now())
+  updatedAt           DateTime   @updatedAt
 }
+
+model CarImage {
+  id        Int      @id @default(autoincrement())
+  url       String
+  carId     Int
+  car       Car      @relation(fields: [carId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+} 
+
+model Booking {
+  id        Int           @id @default(autoincrement())
+  name      String
+  phone     String
+  date      DateTime
+  status    BookingStatus @default(PENDING)
+
+  carId     Int
+  car       Car @relation(fields: [carId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+} 
