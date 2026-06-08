@@ -47,5 +47,33 @@ export const getAllBookings = async () => {
 }
 
 export const getBookingById = async (id: number) =>{
-    
+    const booking = await prisma.booking.findUnique({
+        where: {id},
+        include:{
+            car: true
+        }
+    });
+    if(!booking) throw new Error("Booking not found!");
+    return booking;    
 }
+
+export const updateBooking = async (id: number, data: any) =>{
+    const booking = await prisma.booking.findUnique({
+        where: {id},
+        data: {
+            ...data,
+            ...(data.date && {date: new Date(data.date)}),
+        },
+    });
+};
+
+export const deleteBooking = async (id: number) =>{
+    const booking = await prisma.booking.findUnique({
+        where: {id},
+    })
+    if(!booking) throw new Error("Booking not found!");
+
+    return prisma.booking.delete({
+        where: {id},
+    });
+};
