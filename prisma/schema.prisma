@@ -8,6 +8,11 @@ datasource db {
   }
 
   
+enum Role {
+  ADMIN
+  USER
+}
+
 enum CarStatus {
   AVAILABLE
   SOLD
@@ -17,6 +22,23 @@ enum BookingStatus {
   PENDING
   CONFIRMED
   CANCELLED
+}
+
+model User {
+  id Int @id @default(autoincrement())
+  name String
+  email String @unique
+  phone String @unique
+  password String
+
+  role Role @default(USER)
+
+  isActive Boolean @default(true)
+
+  bookings Booking[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model Car {
@@ -52,13 +74,16 @@ model CarImage {
 
 model Booking {
   id        Int           @id @default(autoincrement())
-  name      String
-  phone     String
-  date      DateTime
-  status    BookingStatus @default(PENDING)
+
+  userId    Int
+  user      User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   carId     Int
   car       Car @relation(fields: [carId], references: [id], onDelete: Cascade)
 
+  date      DateTime
+  status    BookingStatus @default(PENDING)
+
   createdAt DateTime @default(now())
-} 
+  updatedAt DateTime @updatedAt
+}

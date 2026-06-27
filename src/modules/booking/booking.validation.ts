@@ -12,7 +12,7 @@ export const createBookingSchema = z.object({
 
 export const updateBookingSchema = z.object({
     name: z.string().optional(),
-    phone: z.string().optional,
+    phone: z.string().optional(),
 
     date: z.string().optional(),
 

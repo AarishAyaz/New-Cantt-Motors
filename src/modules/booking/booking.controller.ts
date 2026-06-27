@@ -45,7 +45,8 @@ export const updateBookingController = async (req: Request, res: Response) =>{
         const updated = await updateBooking(id, data);
         
         res.json({success: true, data: updated})
-    } catch{
+    } catch(error: any) {
+        console.error("Update failed!", error);
         res.status(400).json({success: false, message: "Update failed!"})
     }
 }
