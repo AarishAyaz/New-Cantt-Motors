@@ -1,95 +1,124 @@
 import prisma from "../../config/prisma";
 
+import { BookingStatus } from "../../generated/prisma/enums";
+
 export const createBooking = async (data: {
-    name: string;
-    phone: string;
-    date: string;
-    carId: number;
+  userId: number;
+  carId: number;
+  date: string;
 }) => {
-    const car = await prisma.car.findUnique({
-        where: { id: data.carId },
-    });
+  // Check user exists
+  const user = await prisma.user.findUnique({
+    where: { id: data.userId },
+  });
 
-    if (!car) {
-        throw new Error("Car not found");
-    }
+  if (!user) {
+    throw new Error("User not found");
+  }
 
-    if (car.status === "SOLD") {
-        throw new Error("Car is already sold");
-    }
+  // Check car exists
+  const car = await prisma.car.findUnique({
+    where: { id: data.carId },
+  });
 
-    const bookingDate = new Date(data.date);
+  if (!car) {
+    throw new Error("Car not found");
+  }
 
-    if (bookingDate < new Date()) {
-        throw new Error("Cannot book past date");
-    }
+  // Prevent booking sold cars
+  if (car.status === "SOLD") {
+    throw new Error("Car is already sold");
+  }
 
-    return prisma.booking.create({
-        data: {
-            name: data.name,
-            phone: data.phone,
-            date: bookingDate,
-            carId: data.carId,
-        },
-    });
+  const bookingDate = new Date(data.date);
+
+  if (bookingDate < new Date()) {
+    throw new Error("Cannot book a past date");
+  }
+
+  return prisma.booking.create({
+    data: {
+      userId: data.userId,
+      carId: data.carId,
+      date: bookingDate,
+    },
+    include: {
+      user: true,
+      car: true,
+    },
+  });
 };
 
 export const getAllBookings = async () => {
-    return prisma.booking.findMany({
-        include: {
-            car: true,
-        },
-        orderBy: {
-            createdAt: "desc",
-        },
-    });
+  return prisma.booking.findMany({
+    include: {
+      user: true,
+      car: true,
+    },
+    orderBy: {
+      createdAt: "desc",
+    },
+  });
 };
 
 export const getBookingById = async (id: number) => {
-    const booking = await prisma.booking.findUnique({
-        where: { id },
-        include: {
-            car: true,
-        },
-    });
+  const booking = await prisma.booking.findUnique({
+    where: { id },
+    include: {
+      user: true,
+      car: true,
+    },
+  });
 
-    if (!booking) {
-        throw new Error("Booking not found!");
-    }
+  if (!booking) {
+    throw new Error("Booking not found");
+  }
 
-    return booking;
+  return booking;
 };
 
-export const updateBooking = async (id: number, data: any) => {
-    const booking = await prisma.booking.findUnique({
-        where: { id },
-    });
+export const updateBooking = async (
+  id: number,
+  data: {
+    date?: string;
+    status?: BookingStatus;
+  }
+) => {
+  const booking = await prisma.booking.findUnique({
+    where: { id },
+  });
 
-    if (!booking) {
-        throw new Error("Booking not found!");
-    }
+  if (!booking) {
+    throw new Error("Booking not found");
+  }
 
-    return prisma.booking.update({
-        where: { id },
-        data: {
-            ...data,
-            ...(data.date && {
-                date: new Date(data.date),
-            }),
-        },
-    });
+  return prisma.booking.update({
+    where: { id },
+    data: {
+      ...(data.date && {
+        date: new Date(data.date),
+      }),
+      ...(data.status && {
+        status: data.status,
+      }),
+    },
+    include: {
+      user: true,
+      car: true,
+    },
+  });
 };
 
 export const deleteBooking = async (id: number) => {
-    const booking = await prisma.booking.findUnique({
-        where: { id },
-    });
+  const booking = await prisma.booking.findUnique({
+    where: { id },
+  });
 
-    if (!booking) {
-        throw new Error("Booking not found!");
-    }
+  if (!booking) {
+    throw new Error("Booking not found");
+  }
 
-    return prisma.booking.delete({
-        where: { id },
-    });
+  return prisma.booking.delete({
+    where: { id },
+  });
 };
